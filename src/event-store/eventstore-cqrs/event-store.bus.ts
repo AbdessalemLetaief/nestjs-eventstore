@@ -54,13 +54,14 @@ export class EventStoreBus {
       return sub.type === EventStoreSubscriptionType.Persistent;
     });
 
-    this.subscribeToCatchUpSubscriptions(
-      catchupSubscriptions as ESCatchUpSubscription[],
-    );
-
-    this.subscribeToPersistentSubscriptions(
-      persistentSubscriptions as ESPersistentSubscription[],
-    );
+    this.eventStore.connection.on('connected', () => {
+      this.subscribeToCatchUpSubscriptions(
+        catchupSubscriptions as ESCatchUpSubscription[],
+      );
+      this.subscribeToPersistentSubscriptions(
+        persistentSubscriptions as ESPersistentSubscription[],
+      );
+    });
   }
 
   async subscribeToPersistentSubscriptions(
