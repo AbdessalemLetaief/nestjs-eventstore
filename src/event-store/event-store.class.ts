@@ -18,28 +18,28 @@ export class EventStore {
     private settings: ConnectionSettings,
     private endpoint: TcpEndPoint,
   ) {
-    this.retryAttempts = 9;
+    this.retryAttempts = 0;
     this.connect();
   }
 
   async connect() {
-    if (this.retryAttempts < 0) {
-      this.logger.error('Unable to connect.');
-      process.exit(1);
-    }
     this.connection = createConnection(this.settings, this.endpoint);
     this.connection.connect();
     this.connection.on('connected', () => {
       this.logger.log('Connection to EventStore established!');
-      this.retryAttempts = 9;
+      this.retryAttempts = 0;
       this.isConnected = true;
     });
     this.connection.on('closed', () => {
-      this.logger.error(`Connection to EventStore closed! reconnecting attempt(${10 - this.retryAttempts})...`);
-      this.retryAttempts -= 1;
+      this.logger.error(`Connection to EventStore closed! reconnecting attempt(${this.retryAttempts})...`);
+      this.retryAttempts += 1;
       this.isConnected = false;
       this.connect();
     });
+  }
+
+  getConnection(): EventStoreNodeConnection {
+    return this.connection;
   }
 
   close() {
